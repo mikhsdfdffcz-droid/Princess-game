@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Принцесса и Чудовище (RPG)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #1a1410;
+            color: #f0e0c0;
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+        }
+        #game {
+            max-width: 480px;
+            width: 100%;
+            background: #2a1f18;
+            padding: 25px 20px;
+            border-radius: 30px;
+            border: 2px solid #6b4f3a;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+        }
+        #title {
+            text-align: center;
+            font-size: 20px;
+            color: #f0c8a0;
+            border-bottom: 2px solid #4a3427;
+            padding-bottom: 12px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px #3a251a;
+        }
+        #image {
+            text-align: center;
+            font-size: 60px;
+            margin: 5px 0 0 0;
+            line-height: 1.3;
+        }
+        #stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1f1611;
+            padding: 10px 15px;
+            border-radius: 30px;
+            margin: 8px 0 12px 0;
+            border: 1px solid #4a3427;
+            font-size: 15px;
+        }
+        #hp-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 60%;
+        }
+        #hp-fill {
+            height: 12px;
+            background: #6b2f2f;
+            border-radius: 20px;
+            flex: 1;
+            overflow: hidden;
+            border: 1px solid #8a4a4a;
+        }
+        #hp-fill-inner {
+            height: 100%;
+            width: 100%;
+            background: #d44a4a;
+            border-radius: 20px;
+            transition: width 0.3s;
+        }
+        #hp-text {
+            font-size: 14px;
+            color: #d4a0a0;
+            min-width: 40px;
+        }
+        #inventory {
+            background: #1f1611;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: 1px solid #4a3427;
+            color: #c4a87a;
+            text-align: center;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        #story {
+            background: #1f1611;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 140px;
+            font-size: 16px;
+            line-height: 1.7;
+            border-left: 4px solid #b8863d;
+            margin: 10px 0 16px 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+        #choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .btn {
+            background: #33241c;
+            color: #f5e8d0;
+            border: 2px solid #6b4f3a;
+            padding: 14px 14px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-family: 'Georgia', serif;
+            text-align: left;
+            transition: 0.15s;
+            box-shadow: 0 4px 0 #0f0b08;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #0f0b08;
+            background: #4a3427;
+        }
+        .btn::before {
+            content: "⚔️ ";
+        }
+        .btn.locked {
+            opacity: 0.5;
+            filter: grayscale(0.8);
+        }
+        .btn.locked::before {
+            content: "🔒 ";
+        }
+        #reset {
+            margin-top: 18px;
+            background: #3d2a1e;
+            color: #b09a7a;
+            border: 1px solid #5a3f2e;
+            padding: 12px;
+            border-radius: 40px;
+            font-size: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        #reset:active {
+            background: #241a14;
+        }
+        .badge {
+            background: #4a3427;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #d4c4a8;
+        }
+    </style>
+</head>
+<body>
+<div id="game">
+    <h1 id="title">👑 ПРИНЦЕССА И ЧУДОВИЩЕ</h1>
+    <div id="image">👸</div>
+    
+    <div id="stats">
+        <div id="hp-bar">
+            <span>❤️</span>
+            <div id="hp-fill"><div id="hp-fill-inner" style="width:100%"></div></div>
+            <span id="hp-text">10/10</span>
+        </div>
+        <span id="flags-badge" class="badge">📜 0</span>
+    </div>
+    
+    <div id="inventory">🎒 Инвентарь: пуст</div>
+    <div id="story">Загрузка...</div>
+    <div id="choices"></div>
+    <div id="reset">🔄 Начать заново</div>
+</div>
+
+<script>
+    // ============================================================
+    //   ПОЛНОЦЕННАЯ RPG: ЗДОРОВЬЕ + ИНВЕНТАРЬ + ПАМЯТЬ РЕШЕНИЙ
+    // ============================================================
+
+    // ----- СОСТОЯНИЕ ИГРЫ (сохраняется между сценами) -----
+    let state = {
+        hp: 10,
+        maxHp: 10,
+        inventory: [],
+        flags: {},      // сюда пишем всё, что игрок сделал
+        stepCount: 0
+    };
+
+    // ============================================================
+    //  ВСЯ ТВОЯ ИСТОРИЯ — с условиями, инвентарём и HP
+    // ============================================================
+    const gameData = {
+
+        // ---------- СТАРТ ----------
+        start: {
+            id: "start",
+            text: "👸 Ты — принцесса Элиана. Ты превратила советника в жабу (не специально!) и теперь изгнана. С собой у тебя только меч, остроумие и твоя эффектная внешность. Куда направишься?",
+            image: "👸",
+            onEnter: function() {
+                // Даём стартовый предмет, если его нет
+                if (!state.inventory.includes("🗡️ Меч")) {
+                    state.inventory.push("🗡️ Меч");
+                }
+            },
+            choices: [
+                { text: "🌲 Запретный Лес — там романтика и опасности", nextNode: "forest" },
+                { text: "🏚️ Город Воров — там хаос и приключения", nextNode: "thief_city" }
+            ]
+        },
+
+        // ---------- ЛЕС ----------
+        forest: {
+            id: "forest",
+            text: "🌲 Лес шепчет твоё имя. На поляне ты видишь раненого паладина. Он стонет: «Принцесса... дракон... помоги...». Ты замечаешь, что он очень симпатичный.",
+            image: "🌲",
+            choices: [
+                { text: "❤️ Спасти паладина (потеряешь 2 HP, но получишь союзника)", nextNode: "save_paladin", cost: { hp: -2 } },
+                { text: "💬 Спросить про проклятие жабы", nextNode: "paladin_quest" },
+                { text: "💰 Ограбить его (стыдно, но ты принцесса без денег)", nextNode: "rob_paladin" }
+            ]
+        },
+
+        save_paladin: {
+            id: "save_paladin",
+            text: "🩹 Ты перевязываешь паладина. Он представляется: «Сэр Ланселот, к вашим услугам». Ты теряешь 2 HP, но теперь у тебя есть верный друг. Он говорит, что знает, как снять проклятие.",
+            image: "⚜️",
+            onEnter: function() {
+                state.flags.met_paladin = true;
+                state.flags.saved_paladin = true;
+                if (!state.inventory.includes("🩹 Бинты")) {
+                    state.inventory.push("🩹 Бинты");
+                }
+            },
+            choices: [
+                { text: "🐉 Идти к дракону вместе", nextNode: "dragon_fight" },
+                { text: "🕯️ Искать артефакт в пещере", nextNode: "cave_adventure" }
+            ]
+        },
+
+        paladin_quest: {
+            id: "paladin_quest",
+            text: "🗣️ Паладин говорит: «Советник стал жабой из-за древнего проклятия. Его можно снять только артефактом в пещере. Пойдём со мной!».",
+            image: "🗡️",
+            onEnter: function() {
+                state.flags.met_paladin = true;
+            },
+            choices: [
+                { text: "🕯️ Идти в пещеру", nextNode: "cave_adventure" },
+                { text: "🐉 Сначала убить дракона", nextNode: "dragon_fight" }
+            ]
+        },
+
+        rob_paladin: {
+            id: "rob_paladin",
+            text: "💰 Ты находишь у него кошелёк и... любовное письмо к тебе! Он пишет, что любит тебя с детства. Тебе стыдно, ты возвращаешь всё на место. Он просыпается и ничего не замечает.",
+            image: "💌",
+            onEnter: function() {
+                state.flags.rob_paladin = true;
+                if (!state.inventory.includes("💌 Любовное письмо")) {
+                    state.inventory.push("💌 Любовное письмо");
+                }
+            },
+            choices: [
+                { text: "Притвориться, что ничего не было", nextNode: "paladin_quest" },
+                { text: "Честно признаться (потеряешь 1 HP от стыда)", nextNode: "paladin_quest", cost: { hp: -1 } }
+            ]
+        },
+
+        // ---------- ПЕЩЕРА ----------
+        cave_adventure: {
+            id: "cave_adventure",
+            text: "🕯️ В пещере темно. На стене написано: «Унылый Единорог охраняет артефакт». Ты слышишь грустный голос: «Я такой одинокий... никто не верит в мою красоту...».",
+            image: "🦄",
+            choices: [
+                { text: "🌟 Похвалить единорога (проверка: если есть письмо — бонус)", nextNode: "unicorn_good" },
+                { text: "⚔️ Атаковать единорога (сложный бой, -3 HP)", nextNode: "unicorn_fight", cost: { hp: -3 } }
+            ]
+        },
+
+        unicorn_good: {
+            id: "unicorn_good",
+            text: "🦄 Ты говоришь: «Ты прекраснее всех единорогов!». Он сияет и отдаёт артефакт. Ты снимаешь проклятие! Теперь советник снова человек.",
+            image: "✨",
+            onEnter: function() {
+                state.flags.cursed_lifted = true;
+                if (!state.inventory.includes("✨ Артефакт")) {
+                    state.inventory.push("✨ Артефакт");
+                }
+                // Если есть письмо, добавляем романтический флаг
+                if (state.inventory.includes("💌 Любовное письмо")) {
+                    state.flags.romance_paladin = true;
+                }
+            },
+            choices: [
+                { text: "💍 Выйти замуж за паладина", nextNode: "ending_wedding" },
+                { text: "👸 Остаться свободной принцессой", nextNode: "ending_free" }
+            ]
+        },
+
+        unicorn_fight: {
+            id: "unicorn_fight",
+            text: "⚔️ Ты бьёшь единорога, но он превращается в огромного медведя! Ты теряешь 3 HP, но выцарапываешь артефакт. Медведь рычит: «Ты смелая, иди с миром».",
+            image: "🐻",
+            onEnter: function() {
+                state.flags.fought_unicorn = true;
+                if (!state.inventory.includes("✨ Артефакт")) {
+                    state.inventory.push("✨ Артефакт");
+                }
+            },
+            choices: [
+                { text: "Вернуться к паладину и снять проклятие", nextNode: "paladin_quest" }
+            ]
+        },
+
+        // ---------- ДРАКОН ----------
+        dragon_fight: {
+            id: "dragon_fight",
+            text: "🐉 Дракон оказался поэтом! Он вздыхает: «Я хочу писать стихи, а не жечь замки. Но мой отец сказал, что я должен быть злым!». Ты можешь выбрать:",
+            image: "🐉",
+            choices: [
+                { text: "📝 Убедить его стать поэтом (романтика с драконом)", nextNode: "dragon_poet" },
+                { text: "⚔️ Сразиться ради паладина (боевой путь, -2 HP)", nextNode: "dragon_serious", cost: { hp: -2 } }
+            ]
+        },
+
+        dragon_poet: {
+            id: "dragon_poet",
+            text: "📖 Дракон читает тебе стихи. Ты влюблена! Но тут появляется паладин и говорит: «Выбирай — я или дракон!».",
+            image: "❤️",
+            onEnter: function() {
+                state.flags.met_dragon = true;
+                state.flags.dragon_romance = true;
+            },
+            choices: [
+                { text: "🐉 Выбрать дракона (концовка 1)", nextNode: "ending_dragon_poet" },
+                { text: "⚜️ Выбрать паладина (концовка 2)", nextNode: "ending_paladin" }
+            ]
+        },
+
+        dragon_serious: {
+            id: "dragon_serious",
+            text: "⚡ Ты сражаешься с драконом, но он плачет: «Я просто хотел друзей!». Ты бросаешь меч и обнимаешь его. Теперь вы друзья.",
+            image: "🤝",
+            onEnter: function() {
+                state.flags.met_dragon = true;
+                state.flags.dragon_friend = true;
+            },
+            choices: [
+                { text: "Путь дружбы (концовка 3)", nextNode: "ending_friendship" }
+            ]
+        },
+
+        // ---------- ГОРОД ВОРОВ ----------
+        thief_city: {
+            id: "thief_city",
+            text: "🏚️ В таверне «У пьяного тролля» ты встречаешь обаятельного разбойника. «Элиана, я знал, что ты придёшь! Хочешь стать королевой воров?». Он очень красив и опасен.",
+            image: "🔪",
+            choices: [
+                { text: "👑 Согласиться стать королевой воров", nextNode: "queen_thief" },
+                { text: "❤️ Влюбиться в разбойника (романтика)", nextNode: "thief_romance" },
+                { text: "🚔 Сдать его страже (предательство)", nextNode: "betray_thief" }
+            ]
+        },
+
+        queen_thief: {
+            id: "queen_thief",
+            text: "👑 Ты становишься королевой воров. Город процветает. Но тут приходит весть, что твой бывший советник-жаба решил отомстить.",
+            image: "👑",
+            onEnter: function() {
+                state.flags.queen_of_thieves = true;
+                if (!state.inventory.includes("👑 Воровская корона")) {
+                    state.inventory.push("👑 Воровская корона");
+                }
+            },
+            choices: [
+                { text: "Помиловать советника (концовка 7)", nextNode: "ending_thief_queen" },
+                { text: "Сразиться с ним (концовка 7)", nextNode: "ending_thief_queen" }
+            ]
+        },
+
+        thief_romance: {
+            id: "thief_romance",
+            text: "❤️ Разбойник оказывается тайным принцем! «Я сбежал от скуки. Давай сбежим вместе?». Ты соглашаешься.",
+            image: "💋",
+            onEnter: function() {
+                state.flags.thief_romance = true;
+            },
+            choices: [
+                { text: "Путешествие вдвоём (концовка 8)", nextNode: "ending_thief_love" }
+            ]
+        },
+
+        betray_thief: {
+            id: "betray_thief",
+            text: "🚔 Ты сдаёшь разбойника. Он говорит: «Я всё равно люблю тебя». Тебе стыдно, ты освобождаешь его и сбегаешь в лес.",
+            image: "😳",
+            onEnter: function() {
+                state.flags.betrayed_thief = true;
+            },
+            choices: [
+                { text: "Вернуться в лес", nextNode: "forest" },
+                { text: "Стать отшельницей (концовка 9)", nextNode: "ending_hermit" }
+            ]
+        },
+
+        // ---------- КОНЦОВКИ ----------
+        ending_dragon_poet: {
+            id: "ending_dragon_poet",
+            text: "🐉❤️ Ты выходишь замуж за дракона. Он пишет тебе стихи, вы летаете над замками. Королевство в шоке, но все смеются. Ты нашла любовь и юмор.",
+            image: "🏆",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_paladin: {
+            id: "ending_paladin",
+            text: "⚜️❤️ Ты выбираешь паладина. Он дарит тебе меч с гравировкой «Моей героине». Вы правите вместе, а бывший советник-жаба живёт в саду.",
+            image: "🏰",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_friendship: {
+            id: "ending_friendship",
+            text: "🤝 Дружба — это сила. Ты, паладин и дракон становитесь «Троицей смешных неудачников». Вы счастливы!",
+            image: "🌈",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_wedding: {
+            id: "ending_wedding",
+            text: "💍 Свадьба скромная: ты, паладин, дракон-поэт и советник-жаба. Все плакали от счастья. Королевство обожает свою юморную королеву.",
+            image: "🎉",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_free: {
+            id: "ending_free",
+            text: "👸 Ты говоришь «Нет» короне и уходишь в кругосветку. Ты стала легендой — принцесса, которая выбрала себя. Лучшая концовка!",
+            image: "✈️",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_thief_queen: {
+            id: "ending_thief_queen",
+            text: "👑 Ты — королева воров, но справедливая. Грабишь богатых, отдаёшь бедным. У тебя армия, остроумие и свобода.",
+            image: "💎",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_thief_love: {
+            id: "ending_thief_love",
+            text: "💋 Ты и принц-разбойник путешествуете. Ты больше не принцесса — просто Элиана. Счастлива, свободна и влюблена.",
+            image: "🌅",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+        ending_hermit: {
+            id: "ending_hermit",
+            text: "🏔️ Ты уходишь в горы. Растишь овощи, рассказываешь детям смешные истории. Ты мудра и одинока, но не грустна.",
+            image: "⛰️",
+            choices: [{ text: "🔄 Сыграть заново", nextNode: "restart" }]
+        },
+
+        // ---------- СЕКРЕТНАЯ СЦЕНА ----------
+        restart: {
+            id: "restart",
+            text: "♻️ Игра перезапущена! Приключение начинается заново.",
+            image: "🔄",
+            onEnter: function() {
+                // Полный сброс при рестарте
+                state.hp = 10;
+                state.maxHp = 10;
+                state.inventory = [];
+                state.flags = {};
+                state.stepCount = 0;
+            },
+            choices: [
+                { text: "Начать новую игру", nextNode: "start" }
+            ]
+        }
+    };
+
+    // ============================================================
+    //   ДВИЖОК (с поддержкой HP, инвентаря, флагов, условий)
+    // ============================================================
+
+    let currentNode = "start";
+
+    function updateUI() {
+        // Здоровье
+        const hpPercent = Math.max(0, (state.hp / state.maxHp) * 100);
+        document.getElementById("hp-fill-inner").style.width = hpPercent + "%";
+        document.getElementById("hp-text").innerText = Math.max(0, state.hp) + "/" + state.maxHp;
+
+        // Инвентарь
+        const invDiv = document.getElementById("inventory");
+        if (state.inventory.length === 0) {
+            invDiv.innerHTML = "🎒 Инвентарь: пуст";
+        } else {
+            invDiv.innerHTML = "🎒 " + state.inventory.join(" ");
+        }
+
+        // Счётчик флагов (для атмосферы)
+        const flagCount = Object.keys(state.flags).length;
+        document.getElementById("flags-badge").innerText = "📜 " + flagCount;
+    }
+
+    function render(nodeId) {
+        const node = gameData[nodeId];
+        if (!node) {
+            document.getElementById("story").innerText = "Ошибка: сцена не найдена!";
+            return;
+        }
+
+        // Проверяем здоровье (если 0 — отправляем на рестарт)
+        if (state.hp <= 0) {
+            document.getElementById("story").innerText = "💀 Ты погибла... Но это не конец! Попробуй снова.";
+            document.getElementById("image").innerText = "💀";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("reset").style.display = "block";
+            return;
+        }
+
+        // Вызываем onEnter (если есть) — для изменения состояния при входе
+        if (node.onEnter) {
+            node.onEnter();
+        }
+
+        // Текст и картинка
+        document.getElementById("story").innerText = node.text;
+        document.getElementById("image").innerText = node.image || "👸";
+
+        // Обновляем UI
+        updateUI();
+
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = "";
+
+        if (node.choices && node.choices.length > 0) {
+            node.choices.forEach(choice => {
+                const btn = document.createElement("button");
+                btn.className = "btn";
+
+                // Проверяем условия (можно добавить позже)
+                let available = true;
+
+                // Если есть условие по инвентарю
+                if (choice.requireInventory) {
+                    const hasAll = choice.requireInventory.every(item => state.inventory.includes(item));
+                    if (!hasAll) available = false;
+                }
+
+                // Если есть условие по флагу
+                if (choice.requireFlag) {
+                    if (!state.flags[choice.requireFlag]) available = false;
+                }
+
+                if (!available) {
+                    btn.classList.add("locked");
+                    btn.innerText = "🔒 " + choice.text;
+                    btn.disabled = true;
+                } else {
+                    btn.innerText = choice.text;
+                    btn.onclick = function() {
+                        // Применяем стоимость (HP, предметы и т.д.)
+                        if (choice.cost) {
+                            if (choice.cost.hp) {
+                                state.hp += choice.cost.hp;
+                                if (state.hp < 0) state.hp = 0;
+                            }
+                            if (choice.cost.removeItem) {
+                                const idx = state.inventory.indexOf(choice.cost.removeItem);
+                                if (idx !== -1) state.inventory.splice(idx, 1);
+                            }
+                            if (choice.cost.addItem) {
+                                if (!state.inventory.includes(choice.cost.addItem)) {
+                                    state.inventory.push(choice.cost.addItem);
+                                }
+                            }
+                        }
+
+                        // Переход
+                        if (gameData[choice.nextNode]) {
+                            currentNode = choice.nextNode;
+                            render(currentNode);
+                        } else {
+                            alert("Ошибка: сцена '" + choice.nextNode + "' не найдена!");
+                        }
+                    };
+                }
+
+                choicesDiv.appendChild(btn);
+            });
+        }
+
+        // Прячем кнопку рестарта, если мы не на экране смерти
+        document.getElementById("reset").style.display = "block";
+
+        // Прокрутка
+        document.getElementById("game").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function restartGame() {
+        state.hp = 10;
+        state.maxHp = 10;
+        state.inventory = [];
+        state.flags = {};
+        state.stepCount = 0;
+        currentNode = "start";
+        render(currentNode);
+    }
+
+    // Запуск
+    document.addEventListener("DOMContentLoaded", function() {
+        render("start");
+        document.getElementById("reset").addEventListener("click", restartGame);
+    });
+</script>
+</body>
+</html>
